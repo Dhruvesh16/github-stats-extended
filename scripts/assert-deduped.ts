@@ -7,8 +7,6 @@ const SINGLE_VERSION: Array<string> = [
   "lightningcss",
   "axios",
   "axios-cache-interceptor",
-  "astro",
-  "@astrojs/markdown-satteri",
   "zod",
 ];
 
