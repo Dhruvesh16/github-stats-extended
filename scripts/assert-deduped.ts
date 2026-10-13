@@ -7,7 +7,6 @@ const SINGLE_VERSION: Array<string> = [
   "lightningcss",
   "axios",
   "axios-cache-interceptor",
-  "zod",
 ];
 
 const lockfile = fs.readFileSync("pnpm-lock.yaml", "utf8").split("\n");

@@ -24,8 +24,6 @@ overrides:
   # Updates against the existing lockfile keep 1.32.0 either way, so this only guards re-resolution.
   # Enforced by scripts/assert-deduped.ts; drop it there too once @tailwindcss/node pins a version vite also resolves to.
   "vite>lightningcss": 1.32.0
-  # zod 4.6.2 leads to type errors being detected in starlight
-  zod: 4.6.1
   # see https://github.com/stats-organization/github-stats-extended/pull/555
   axios: 1.18.1
   axios-cache-interceptor: 1.12.1
