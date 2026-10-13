@@ -1,10 +1,10 @@
-import axios from "axios";
-import MockAdapter from "axios-mock-adapter";
 import { beforeAll, bench, describe, vi } from "vitest";
 
-import { createRequestResponse, happy_path_gist_data } from "../utils.js";
-
-const mock = new MockAdapter(axios);
+import {
+  createRequestResponse,
+  happy_path_gist_data,
+  mockGraphQL,
+} from "../utils.js";
 
 let router;
 
@@ -16,9 +16,7 @@ beforeAll(async () => {
 
   ({ default: router } = await import("../../router.js"));
 
-  mock
-    .onPost("https://api.github.com/graphql")
-    .reply(200, happy_path_gist_data);
+  mockGraphQL(happy_path_gist_data);
 });
 
 describe("bench /api/gist", () => {
