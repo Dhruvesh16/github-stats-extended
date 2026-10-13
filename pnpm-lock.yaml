@@ -10,8 +10,8 @@ catalogs:
       specifier: 5.0.0
       version: 5.0.0
     axios:
-      specifier: 1.19.0
-      version: 1.19.0
+      specifier: 1.20.0
+      version: 1.20.0
     jsdom:
       specifier: 30.1.2
       version: 30.1.2
@@ -94,7 +94,7 @@ importers:
         version: link:../../packages/core
       axios:
         specifier: catalog:default
-        version: 1.19.0
+        version: 1.20.0
       express:
         specifier: 5.2.1
         version: 5.2.1
@@ -146,10 +146,10 @@ importers:
         version: 7.3.5(@astrojs/markdown-remark@7.3.1)(@types/node@24.19.1)(jiti@2.7.0)(yaml@2.9.1)
       axios:
         specifier: catalog:default
-        version: 1.19.0
+        version: 1.20.0
       axios-cache-interceptor:
         specifier: ^1.12.3
-        version: 1.12.3(axios@1.19.0)
+        version: 1.12.3(axios@1.20.0)
       clsx:
         specifier: 2.1.1
         version: 2.1.1
@@ -197,7 +197,7 @@ importers:
     dependencies:
       axios:
         specifier: catalog:default
-        version: 1.19.0
+        version: 1.20.0
       emoji-name-map:
         specifier: ^2.0.3
         version: 2.0.3
@@ -2224,8 +2224,8 @@ packages:
     peerDependencies:
       axios: ^1.19.0
 
-  axios@1.19.0:
-    resolution: {integrity: sha512-ht/iuYZXEjFxLH/Hkezgd7m6JKlHHXEUSneaDz8uZe1Gj5QZtCnpyDsckvAiEnT89OEbCLmnte4R4sn7P0EKFw==}
+  axios@1.20.0:
+    resolution: {integrity: sha512-r8aOh8j9cGKpgQAqpzrUHnSIc6a59Y3Xf/cv8sy1DrHCkZHzQGEuoq1tARk6qSyDdtQGSDgpb9kFlruzPvrgwg==}
 
   axobject-query@4.1.0:
     resolution: {integrity: sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ==}
@@ -6543,16 +6543,16 @@ snapshots:
 
   auto-bind@5.0.1: {}
 
-  axios-cache-interceptor@1.12.3(axios@1.19.0):
+  axios-cache-interceptor@1.12.3(axios@1.20.0):
     dependencies:
-      axios: 1.19.0
+      axios: 1.20.0
       cache-parser: 1.2.6
       fast-defer: 1.1.9
       http-vary: 1.0.3
       object-code: 2.0.0
       try: 1.0.3
 
-  axios@1.19.0:
+  axios@1.20.0:
     dependencies:
       follow-redirects: 1.16.1
       form-data: 4.0.6
