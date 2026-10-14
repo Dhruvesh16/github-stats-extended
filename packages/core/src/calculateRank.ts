@@ -31,6 +31,9 @@ function log_normal_cdf(x: number): number {
  * @param params.repos Total number of repos (accepted for compatibility, unused in the calculation).
  * @param params.stars The number of stars.
  * @param params.followers The number of followers.
+ * @param params.contributions All-time contributions. When greater than 0, the
+ *   rank is based on activity only (contributions, commits, PRs, issues and
+ *   reviews) and ignores stars and followers.
  * @returns The users rank.
  */
 function calculateRank({
@@ -41,6 +44,7 @@ function calculateRank({
   reviews,
   stars,
   followers,
+  contributions = 0,
 }: {
   all_commits: boolean;
   commits: number;
@@ -50,6 +54,7 @@ function calculateRank({
   repos: number;
   stars: number;
   followers: number;
+  contributions?: number;
 }): { level: string; percentile: number } {
   const COMMITS_MEDIAN = all_commits ? 1000 : 250,
     COMMITS_WEIGHT = 2;
@@ -63,27 +68,32 @@ function calculateRank({
     STARS_WEIGHT = 4;
   const FOLLOWERS_MEDIAN = 10,
     FOLLOWERS_WEIGHT = 1;
+  const CONTRIBUTIONS_MEDIAN = 1000,
+    CONTRIBUTIONS_WEIGHT = 6;
 
-  const TOTAL_WEIGHT =
-    COMMITS_WEIGHT +
-    PRS_WEIGHT +
-    ISSUES_WEIGHT +
-    REVIEWS_WEIGHT +
-    STARS_WEIGHT +
-    FOLLOWERS_WEIGHT;
+  const activityScore =
+    COMMITS_WEIGHT * exponential_cdf(commits / COMMITS_MEDIAN) +
+    PRS_WEIGHT * exponential_cdf(prs / PRS_MEDIAN) +
+    ISSUES_WEIGHT * exponential_cdf(issues / ISSUES_MEDIAN) +
+    REVIEWS_WEIGHT * exponential_cdf(reviews / REVIEWS_MEDIAN);
+  const activityWeight =
+    COMMITS_WEIGHT + PRS_WEIGHT + ISSUES_WEIGHT + REVIEWS_WEIGHT;
 
   const THRESHOLDS = [1, 12.5, 25, 37.5, 50, 62.5, 75, 87.5, 100];
   const LEVELS = ["S", "A+", "A", "A-", "B+", "B", "B-", "C+", "C"];
 
   const rank =
-    1 -
-    (COMMITS_WEIGHT * exponential_cdf(commits / COMMITS_MEDIAN) +
-      PRS_WEIGHT * exponential_cdf(prs / PRS_MEDIAN) +
-      ISSUES_WEIGHT * exponential_cdf(issues / ISSUES_MEDIAN) +
-      REVIEWS_WEIGHT * exponential_cdf(reviews / REVIEWS_MEDIAN) +
-      STARS_WEIGHT * log_normal_cdf(stars / STARS_MEDIAN) +
-      FOLLOWERS_WEIGHT * log_normal_cdf(followers / FOLLOWERS_MEDIAN)) /
-      TOTAL_WEIGHT;
+    contributions > 0
+      ? 1 -
+        (CONTRIBUTIONS_WEIGHT *
+          exponential_cdf(contributions / CONTRIBUTIONS_MEDIAN) +
+          activityScore) /
+          (CONTRIBUTIONS_WEIGHT + activityWeight)
+      : 1 -
+        (activityScore +
+          STARS_WEIGHT * log_normal_cdf(stars / STARS_MEDIAN) +
+          FOLLOWERS_WEIGHT * log_normal_cdf(followers / FOLLOWERS_MEDIAN)) /
+          (activityWeight + STARS_WEIGHT + FOLLOWERS_WEIGHT);
 
   const level = LEVELS[THRESHOLDS.findIndex((t) => rank * 100 <= t)];
   if (level === undefined) {

@@ -121,4 +121,23 @@ describe("Test calculateRank", () => {
       percentile: approxNumber(0.4578556547153667),
     });
   });
+
+  it("uses contributions instead of stars and followers when provided", () => {
+    expect(
+      calculateRank({
+        all_commits: false,
+        commits: 115,
+        prs: 47,
+        issues: 4,
+        reviews: 0,
+        repos: 0,
+        stars: 3,
+        followers: 5,
+        contributions: 5050,
+      }),
+    ).toStrictEqual({
+      level: "B+",
+      percentile: approxNumber(39.183148393718255),
+    });
+  });
 });

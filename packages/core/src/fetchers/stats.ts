@@ -735,6 +735,7 @@ const fetchStats = async (
     repos: user.repositories.totalCount,
     stars: stats.totalStars,
     followers: user.followers.totalCount,
+    contributions: stats.totalContributions,
   });
 
   return stats;
