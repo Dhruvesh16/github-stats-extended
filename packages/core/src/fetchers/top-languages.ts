@@ -10,10 +10,45 @@ import type {
   TopLanguageFragment,
   TopLanguagesRepositoryFragment,
 } from "../graphql/generated/top-languages.js";
+import { buildIncludedReposDocument } from "../graphql/includedReposDocument.js";
 
 import type { Lang, TopLangData } from "./types.js";
 
 const fetcher = createGraphQLFetcher(TopLanguagesDocument, "token");
+
+const REPO_PATTERN = /^([\w.-]+)\/([\w.-]+)$/;
+
+/**
+ * Fetch the extra repositories configured via `INCLUDE_REPO`, e.g. repos in
+ * organizations that the user's own repository list does not contain.
+ *
+ * @param pat Optional PAT override.
+ * @returns Repositories that could be fetched; inaccessible ones are skipped.
+ */
+const fetchIncludedRepositories = async (
+  pat: string | null,
+): Promise<Array<TopLanguagesRepositoryFragment>> => {
+  const repos = getConfig()
+    .includeRepositories.map((repo) => REPO_PATTERN.exec(repo.trim()))
+    .filter((match): match is RegExpExecArray => !!match)
+    .map(([, owner, name]) => ({ owner: owner ?? "", name: name ?? "" }));
+  if (repos.length === 0) {
+    return [];
+  }
+
+  const res = await retryer(
+    createGraphQLFetcher(buildIncludedReposDocument(repos), "token"),
+    {},
+    pat,
+  );
+  if (res.data.errors) {
+    logger.error(res.data.errors);
+  }
+
+  return Object.values(res.data.data).filter(
+    (node): node is TopLanguagesRepositoryFragment => !!node,
+  );
+};
 
 /**
  * Fetch top languages for a given username.
@@ -80,10 +115,17 @@ const fetchTopLanguages = async (
     repoToHide[repoName] = true;
   });
 
+  const ownRepoNodes = (res.data.data.user?.repositories.nodes ?? []).filter(
+    (node): node is TopLanguagesRepositoryFragment => !!node,
+  );
+  const ownRepoNames = new Set(ownRepoNodes.map((node) => node.name));
+  const includedRepoNodes = (await fetchIncludedRepositories(pat)).filter(
+    (node) => !ownRepoNames.has(node.name),
+  );
+
   // filter out repositories to be hidden
-  const repoNodes = (res.data.data.user?.repositories.nodes ?? []).filter(
-    (node): node is TopLanguagesRepositoryFragment =>
-      !!node && !repoToHide[node.name],
+  const repoNodes = [...ownRepoNodes, ...includedRepoNodes].filter(
+    (node) => !repoToHide[node.name],
   );
 
   // flatten edges across repos. Order matters: `concat(acc)` prepends, and the

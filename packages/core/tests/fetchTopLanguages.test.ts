@@ -2,6 +2,7 @@ import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { loadConfigFromEnv } from "../src/common/config.js";
 import { fetchTopLanguages } from "../src/fetchers/top-languages.js";
 
 import { approxNumber } from "./utils.js";
@@ -91,6 +92,57 @@ describe("FetchTopLanguages", () => {
         size: approxNumber(20.0),
       },
     });
+  });
+
+  it("should add languages from INCLUDE_REPO repositories", async () => {
+    loadConfigFromEnv({
+      ...process.env,
+      INCLUDE_REPO: "some-org/swift-app, not a repo,some-org/test-repo-2",
+    });
+    mock
+      .onPost("https://api.github.com/graphql")
+      .replyOnce(200, data_langs)
+      .onPost("https://api.github.com/graphql")
+      .replyOnce(200, {
+        data: {
+          repo_0: {
+            name: "swift-app",
+            languages: {
+              edges: [{ size: 300, node: { color: "#f05138", name: "Swift" } }],
+            },
+          },
+          repo_1: {
+            name: "test-repo-2",
+            languages: {
+              edges: [
+                { size: 100, node: { color: "#0ff", name: "javascript" } },
+              ],
+            },
+          },
+        },
+      });
+
+    try {
+      const repo = await fetchTopLanguages("anuraghazra", [], 1, 0);
+
+      const { query: includedQuery } = JSON.parse(
+        String(mock.history.post[1]?.data),
+      ) as { query: string };
+      expect(includedQuery).toContain(
+        'repo_0: repository(owner: "some-org", name: "swift-app")',
+      );
+      expect(includedQuery).toContain(
+        'repo_1: repository(owner: "some-org", name: "test-repo-2")',
+      );
+      expect(includedQuery).not.toContain("not a repo");
+      expect(repo).toStrictEqual({
+        Swift: { color: "#f05138", count: 1, name: "Swift", size: 300 },
+        HTML: { color: "#0f0", count: 2, name: "HTML", size: 200 },
+        javascript: { color: "#0ff", count: 2, name: "javascript", size: 200 },
+      });
+    } finally {
+      loadConfigFromEnv();
+    }
   });
 
   it("should fetch correct language data while excluding the 'test-repo-1' repository", async () => {
