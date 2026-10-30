@@ -4,6 +4,7 @@ import { getLightDarkColors, isPrefixedHexColor } from "../common/color.js";
 import { formatBytes } from "../common/fmt.js";
 import { encodeHTML } from "../common/html.js";
 import { DEFAULT_LANG_COLOR } from "../common/languageColors.js";
+import { LANGUAGE_ICON_PATHS } from "../common/languageIcons.js";
 import { chunkArray, clampValue, lowercaseTrim } from "../common/ops.js";
 import {
   createProgressNode,
@@ -40,6 +41,7 @@ interface TopLangOptions extends CommonCardOptions {
   disable_animations: boolean;
   hide_progress: boolean;
   hide_values: boolean;
+  show_icons: boolean;
   prog_bar_bg_color: string;
   stats_format: "percentages" | "bytes";
 }
@@ -270,6 +272,7 @@ const resolveLangColor = (lang: Lang): string => {
  * @param props.statsFormat Stats format.
  * @param props.hideValues Whether to hide stats values.
  * @param props.index Index of the programming language.
+ * @param props.showIcon Whether to draw the language logo before its name.
  * @returns Programming language SVG node.
  */
 const createProgressTextNode = ({
@@ -281,6 +284,7 @@ const createProgressTextNode = ({
   statsFormat,
   hideValues,
   index,
+  showIcon,
 }: {
   width: number;
   color: string;
@@ -290,6 +294,7 @@ const createProgressTextNode = ({
   statsFormat: string;
   hideValues?: boolean | undefined;
   index: number;
+  showIcon?: boolean | undefined;
 }): string => {
   const staggerDelay = (index + 3) * 150;
   const paddingRight = hideValues ? CARD_PADDING * 2 : 95;
@@ -298,10 +303,18 @@ const createProgressTextNode = ({
 
   const progress = (size / totalSize) * 100;
   const displayValue = getDisplayValue(size, progress, statsFormat);
+  const iconPath = LANGUAGE_ICON_PATHS[name];
+  let icon = "";
+  if (showIcon) {
+    icon = iconPath
+      ? `<path data-testid="lang-icon" transform="translate(0, 1) scale(0.6667)" fill="${color}" d="${iconPath}" />`
+      : `<circle data-testid="lang-icon" cx="8" cy="9" r="6" fill="${color}" />`;
+  }
 
   return `
     <g class="stagger" style="animation-delay: ${staggerDelay}ms">
-      <text data-testid="lang-name" x="2" y="15" class="lang-name">${encodeHTML(name)}</text>
+      ${icon}
+      <text data-testid="lang-name" x="${showIcon ? 24 : 2}" y="15" class="lang-name">${encodeHTML(name)}</text>
       ${hideValues ? "" : `<text x="${progressTextX}" y="34" class="lang-name">${encodeHTML(displayValue)}</text>`}
       ${createProgressNode({
         x: 0,
@@ -456,6 +469,7 @@ const createDonutLanguagesNode = ({
  * @param totalLanguageSize Total size of all languages.
  * @param statsFormat Stats format.
  * @param hideValues Whether to hide stats values.
+ * @param showIcons Whether to draw language logos.
  * @returns Normal layout card SVG object.
  */
 const renderNormalLayout = (
@@ -464,6 +478,7 @@ const renderNormalLayout = (
   totalLanguageSize: number,
   statsFormat: string,
   hideValues?: boolean,
+  showIcons?: boolean,
 ): string => {
   return flexLayout({
     items: langs.map((lang, index) => {
@@ -476,6 +491,7 @@ const renderNormalLayout = (
         statsFormat,
         hideValues,
         index,
+        showIcon: showIcons,
       });
     }),
     gap: 40,
@@ -921,6 +937,7 @@ const renderTopLanguages = (
     hide,
     hide_progress,
     hide_values,
+    show_icons,
     layout,
     custom_title,
     locale,
@@ -1004,6 +1021,7 @@ const renderTopLanguages = (
       totalLanguageSize,
       stats_format,
       hide_values,
+      show_icons,
     );
   }
 

@@ -391,6 +391,31 @@ describe("Test renderTopLanguages", () => {
     expect(progresses[2]).toHaveAttribute("width", "20%");
   });
 
+  it("should draw language logos when show_icons is set", () => {
+    document.body.innerHTML = renderTopLanguages(
+      {
+        Swift: { color: "#F05138", name: "Swift", size: 300, count: 1 },
+        Unlisted: { color: "#123456", name: "Unlisted", size: 100, count: 1 },
+      },
+      { show_icons: true },
+    );
+
+    const icons = screen.queryAllByTestId("lang-icon");
+    expect(icons).toHaveLength(2);
+    expect(icons[0]?.tagName).toBe("path");
+    expect(icons[0]).toHaveAttribute("fill", "#F05138");
+    expect(icons[1]?.tagName).toBe("circle");
+    expect(icons[1]).toHaveAttribute("fill", "#123456");
+    expect(screen.queryAllByTestId("lang-name")[0]).toHaveAttribute("x", "24");
+  });
+
+  it("should not draw language logos by default", () => {
+    document.body.innerHTML = renderTopLanguages(langs);
+
+    expect(screen.queryAllByTestId("lang-icon")).toHaveLength(0);
+    expect(screen.queryAllByTestId("lang-name")[0]).toHaveAttribute("x", "2");
+  });
+
   it("should hide languages when hide is passed", () => {
     document.body.innerHTML = renderTopLanguages(langs, {
       hide: ["HTML"],

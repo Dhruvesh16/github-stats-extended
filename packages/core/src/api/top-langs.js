@@ -30,6 +30,7 @@ export default async (
     disable_animations,
     hide_progress,
     hide_values,
+    show_icons,
     stats_format,
     ...remainingParams
   },
@@ -126,6 +127,7 @@ export default async (
         disable_animations: parseBoolean(disable_animations),
         hide_progress: parseBoolean(hide_progress),
         hide_values: parseBoolean(hide_values),
+        show_icons: parseBoolean(show_icons),
         stats_format,
       }),
     };
