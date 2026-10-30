@@ -130,10 +130,6 @@ const getPATInfo = async (fetcher, variables) => {
     suspendedPATs: filterPATsByStatus("suspended"),
     errorPATs: filterPATsByStatus("error"),
     details: sortedDetails,
-    // counts only, so configured repository names stay private
-    excludedRepoCount: getConfig().excludeRepositories.length,
-    includedRepoCount: getConfig().includeRepositories.length,
-    includeRepoEnvSet: Boolean(process.env.INCLUDE_REPO),
   };
 };
 
